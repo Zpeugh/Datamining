@@ -1,6 +1,6 @@
 import preprocess
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 TOPICS_POSITION = 0
 PLACES_POSITION = 1
@@ -54,27 +54,27 @@ for i in range(0, len(NUM_SUFFIXES)):
 
 
 
-length = len(body_word_frequency_dict)
-
-body_words = np.array(list(body_word_frequency_dict.values()) ) / length
-body_words = np.array(body_words)
-
-plt.figure(1)
-plt.scatter(np.arange(len(body_words)), body_words)
-plt.title("Body Word-Frequency")
-plt.xlabel("Individual Words")
-plt.ylabel("Normalized per document Frequency")
-
-body_words2 = np.array(list(body_word_frequency_dict.values())) / length
-body_words2 = np.array([x for x in body_words if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
-
-plt.figure(2)
-plt.scatter(np.arange(len(body_words2)), body_words2)
-plt.title("Sliced Body Word-frequency")
-plt.xlabel("Individual Words")
-plt.ylabel("Normalized per document Frequency")
-
-plt.show()
+# length = len(body_word_frequency_dict)
+#
+# body_words = np.array(list(body_word_frequency_dict.values()) ) / length
+# body_words = np.array(body_words)
+#
+# plt.figure(1)
+# plt.scatter(np.arange(len(body_words)), body_words)
+# plt.title("Body Word-Frequency")
+# plt.xlabel("Individual Words")
+# plt.ylabel("Normalized per document Frequency")
+#
+# body_words2 = np.array(list(body_word_frequency_dict.values())) / length
+# body_words2 = np.array([x for x in body_words if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
+#
+# plt.figure(2)
+# plt.scatter(np.arange(len(body_words2)), body_words2)
+# plt.title("Sliced Body Word-frequency")
+# plt.xlabel("Individual Words")
+# plt.ylabel("Normalized per document Frequency")
+#
+# plt.show()
 
 
 #
