@@ -8,9 +8,6 @@ TITLE_POSITION = 2
 BODY_POSITION = 3
 
 
-#put this pointer in document: /home/0/peugh/5243/lab1
-#set permissions
-
 #
 # #Load in all of the reuters from the archive
 # for i in NUM_SUFFIXES:
@@ -73,10 +70,10 @@ def remove_stopwords( wordset ):
 # tokenize a string and clean it of stopwords, removing duplicates
 # return a set of keywords
 def tokenize_and_clean( str ):
-    # comment out if nltk package is not installed
-    # return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
+    # use split if nltk package is not installed, or install punkt nltk package
+    return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
     # return set( remove_stopwords( nltk.word_tokenize( str ) ) ) #remove duplicates
-    return list( remove_stopwords( str.split() ) )
+    # return list( remove_stopwords( str.split() ) )
 
 
 
