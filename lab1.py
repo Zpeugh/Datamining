@@ -1,130 +1,109 @@
-import urllib
-import re
-import nltk
+import preprocess
+import numpy as np
+import matplotlib.pyplot as plt
 
-# s = 'asdf=5;iwantthis123jasd'
-# result = re.search('asdf=5;(.*)123jasd', s)
-# print result.group(1)
+TOPICS_POSITION = 0
+PLACES_POSITION = 1
+TITLE_POSITION = 2
+BODY_POSITION = 3
 
-nums = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
-#
-# #Load in all of the reuters from the archive
-# for i in nums:
-#     url = "https://web.cse.ohio-state.edu/~srini/674/public/reuters/reut2-0{0}.sgm".format(i)
-#     print url
-#     urllib.urlretrieve (url, "reuters/{0}.sgm".format(i) )
-#
+BODY_LOWER_CUTOFF = .005
+BODY_UPPER_CUTOFF = .015
 
-#Loop through all 21 files and input them into arrays of strings between Reuters
+TITLE_LOWER_CUTOFF = .001
+TITLE_UPPER_CUTOFF = .015
 
 
 
+#####################################BEGIN SCRIPT#########################################
+full_tuple_list = []
+body_word_frequency_dict = dict()
+topic_word_frequency_dict = dict()
+# title_word_frequency_dict = dict()
+topics_set = set()
+NUM_SUFFIXES = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
 
+for i in range(0, len(NUM_SUFFIXES)):
+# for i in range(0, 1):
 
-def make_reuter_list_from_file( filename ):
-    #Setup variables
-    reuter_array = []
-    current_reuter = ""
-    inside_reuter = False
-
-    #iterate through line by line and separate the file into <REUTERS></REUTERS> sections
-    with open( filename ) as reuter:
-        for line in reuter:
-            if ("</REUTERS>" in line):
-                inside_reuter = False
-                reuter_array.append(current_reuter)
-                current_reuter = ""
-            elif inside_reuter:
-                    # print("Inside")
-                    current_reuter += line
-            elif ("<REUTER" in line):
-                inside_reuter = True
-    return reuter_array
-
-
-# Filters out newlines and some other markup jargon in a string.
-def filter_string(str):
-    str = str.replace('\n','')
-    str = str.replace('&lt;','<')
-    return str
-
-
-
-# Takes an array of string reuter bodies and returns a list of tuples in he form (title, body)
-# where title and body are both the filtered string content between their respective tags
-def get_title_body_entry_array( reuter_array ):
-    tuple_array = []
-    i = 0
-    for reuter in reuter_array:
-        reuter = filter_string(reuter)
-        title = re.search( '<TITLE>(.*)</TITLE>', reuter )
-        body = re.search( '<BODY>(.*)</BODY>', reuter )
-        if not title:
-            title = "NONE"
-        else:
-            title = title.group(1)
-        if not body:
-            body = "NONE"
-        else:
-            body = body.group(1)
-        tuple_array.append( (title, body) )
-        i += 1
-    return tuple_array
+    reuter_array = preprocess.make_reuter_list_from_file( "reuters/{0}.sgm".format(NUM_SUFFIXES[i]) )
+    split_array = preprocess.get_entry_array( reuter_array )
+    print("{0}/{1}".format(i,21))
+    for article in split_array:
+        title = preprocess.tokenize_and_clean(article[TITLE_POSITION])
+        body = preprocess.tokenize_and_clean(article[BODY_POSITION])
+        topics = article[TOPICS_POSITION]
+        places = article[PLACES_POSITION]
+        full_tuple_list.append( (topics, places, title, body) )
+        for topic in topics:
+            topics_set.add(topic)
+            if topic in topic_word_frequency_dict:
+                topic_word_frequency_dict[topic] += 1
+            else:
+                topic_word_frequency_dict[topic] = 1
+        # for word in title:
+        #     if word in title_word_frequency_dict:
+        #         title_word_frequency_dict[word] += 1
+        #     else:
+        #         title_word_frequency_dict[word] = 1
+        for word in body:
+            if word in body_word_frequency_dict:
+                body_word_frequency_dict[word] += 1
+            else:
+                body_word_frequency_dict[word] = 1
 
 
 
-# for i in range(0, 21):
-#
-#     reuter_array = make_reuter_list_from_file( "reuters/{0}.sgm".format(nums[i]) )
-#     print( len( reuter_array ) )
+length = len(body_word_frequency_dict)
 
-reuter_array = make_reuter_list_from_file( "reuters/{0}.sgm".format(nums[0]) )
-one = get_title_body_entry_array( reuter_array )
+body_words = np.array(list(body_word_frequency_dict.values()) ) / length
+body_words = np.array(body_words)
 
-body1 = set(nltk.word_tokenize( one[1][1] ))
-body2 = set(nltk.word_tokenize( one[6][1] ))
-print (nltk.jaccard_distance(body1, body2))
+plt.figure(1)
+plt.scatter(np.arange(len(body_words)), body_words)
+plt.title("Body Word-Frequency")
+plt.xlabel("Individual Words")
+plt.ylabel("Normalized per document Frequency")
+
+body_words2 = np.array(list(body_word_frequency_dict.values())) / length
+body_words2 = np.array([x for x in body_words if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
+
+plt.figure(2)
+plt.scatter(np.arange(len(body_words2)), body_words2)
+plt.title("Sliced Body Word-frequency")
+plt.xlabel("Individual Words")
+plt.ylabel("Normalized per document Frequency")
+
+plt.show()
 
 
 #
+# plt.scatter(np.arange(len(topic_word_frequency_dict)), list(topic_word_frequency_dict.values()) )
+# plt.show()
+
+# I will choose a threshold frequency as the inverse of the number of topics available
+# to reduce the dimensionality of the word attributes
+# sliced_body_dict = throw_out_below_frequency( body_word_frequency_dict, 1/len(topics_set) )
+body_copy = body_word_frequency_dict.copy()
+sliced_body_dict = preprocess.throw_out_below_frequency( body_word_frequency_dict, BODY_LOWER_CUTOFF, BODY_UPPER_CUTOFF )
+
+print( "The length of the sliced dictionary is %i" %( len(sliced_body_dict)) )
+
+# sliced_title_dict = throw_out_below_frequency( title_word_frequency_dict, 1/len(topics_set) )
+# sliced_title_dict = preprocess.throw_out_below_frequency( title_word_frequency_dict, TITLE_LOWER_CUTOFF, TITLE_UPPER_CUTOFF )
 #
-# file_0 = open("reuters/{0}.sgm".format(nums[0]), 'r' )
-#
-# num_open_bodies = 0
-# num_closed_bodies = 0
-#
-#
-#
-# monetary_hot_words = ["$", "cents", "dollars", "dollar", "cent"]
-#
-# profit_loss_buzzwords = ["vs"]
-#
-#
-#
-# for line in file_0:
-#     # if ("<TITLE" in line):
-#     #     num_open_bodies += 1
-#     #
-#     # if ("</TITLE>" in line):
-#     #     num_closed_bodies += 1
-#
-#
-#     if ("<REUTER" in line):
-#         result = re.search('<TITLE>(.*)</TITLE>', line)
-#         if result:
-#             print( result.group(1) )
-#
-#
-#     #find titles and add them to the array, writing "none" if there is no title
-#     if ("<TITLE" in line):
-#         result = re.search('<TITLE>(.*)</TITLE>', line)
-#         if result:
-#             print( result.group(1) )
-#
-#     # if ("</TITLE>" in line):
-#     #     num_closed_bodies += 1
-#
-# #
-# #
-# # print( num_open_bodies )
-# # print( num_closed_bodies )
+# print( "The length of the sliced dictionary is %i" %( len(sliced_title_dict)) )
+
+# ordered_title_words_list = list( sliced_title_dict.keys() )
+ordered_body_words_list = list( sliced_body_dict.keys() )
+
+
+final_vector_dataset = preprocess.create_feature_vector( list(topics_set), ordered_body_words_list, full_tuple_list )
+
+words = final_vector_dataset["words_vectors"]
+keywords = final_vector_dataset["topic_keyword_vectors"]
+topics = final_vector_dataset["topics_classes"]
+places = final_vector_dataset["places_classes"]
+
+
+# # print (nltk.jaccard_distance(body1, body2))
