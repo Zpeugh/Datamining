@@ -1,5 +1,5 @@
-import preprocess
 import numpy as np
+import preprocess
 # import matplotlib.pyplot as plt
 
 TOPICS_POSITION = 0
@@ -8,11 +8,7 @@ TITLE_POSITION = 2
 BODY_POSITION = 3
 
 BODY_LOWER_CUTOFF = .005
-BODY_UPPER_CUTOFF = .015
-
-TITLE_LOWER_CUTOFF = .001
-TITLE_UPPER_CUTOFF = .015
-
+BODY_UPPER_CUTOFF = .10
 
 
 #####################################BEGIN SCRIPT#########################################

@@ -73,8 +73,11 @@ def remove_stopwords( wordset ):
 # tokenize a string and clean it of stopwords, removing duplicates
 # return a set of keywords
 def tokenize_and_clean( str ):
-    return list( remove_stopwords( nltk.word_tokenize( str ) ) )
-    # return set( remove_stopwords( nltk.word_tokenize( str ) ) )
+    # comment out if nltk package is not installed
+    # return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
+    # return set( remove_stopwords( nltk.word_tokenize( str ) ) ) #remove duplicates
+    return list( remove_stopwords( str.split() ) )
+
 
 
 # return a list of strings between <D></D> tags
