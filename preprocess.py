@@ -131,10 +131,12 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
     feature_vector_dict['places_classes'] = []
     feature_vector_dict['important_words_vectors'] = []
     i = 0
+    j = 21
     for tup in tuple_array:
         i +=1
         if i % 1000 == 0:
-            print ("{0}%".format(((i / num_documents) * 100) ) )
+            j += 1
+            print ("Step {0}/42".format(j) )
 
         important_words = dict()
         topics = tup[TOPICS_POSITION]

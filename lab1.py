@@ -26,7 +26,7 @@ for i in range(0, len(NUM_SUFFIXES)):
 
     reuter_array = preprocess.make_reuter_list_from_file( "reuters/{0}.sgm".format(NUM_SUFFIXES[i]) )
     split_array = preprocess.get_entry_array( reuter_array )
-    print("{0}/{1}".format(i,21))
+    print("Step {0}/{1}".format(i+1,41))
     for article in split_array:
         title = preprocess.tokenize_and_clean(article[TITLE_POSITION])
         body = preprocess.tokenize_and_clean(article[BODY_POSITION])
