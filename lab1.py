@@ -1,6 +1,10 @@
+# Author: Zach Peugh #
+#    CSE 5243 Lab1   #
+#       2/1/2016     #
+
+################ Script ##############
 import numpy as np
 import preprocess
-# import matplotlib.pyplot as plt
 
 TOPICS_POSITION = 0
 PLACES_POSITION = 1
@@ -11,7 +15,6 @@ BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
 
 
-#####################################BEGIN SCRIPT#########################################
 full_tuple_list = []
 body_word_frequency_dict = dict()
 topic_word_frequency_dict = dict()
@@ -50,7 +53,8 @@ for i in range(0, len(NUM_SUFFIXES)):
 
 
 
-# length = len(body_word_frequency_dict)
+
+length = len(body_word_frequency_dict)
 #
 # body_words = np.array(list(body_word_frequency_dict.values()) ) / length
 # body_words = np.array(body_words)
@@ -62,9 +66,9 @@ for i in range(0, len(NUM_SUFFIXES)):
 # plt.ylabel("Normalized per document Frequency")
 #
 # body_words2 = np.array(list(body_word_frequency_dict.values())) / length
-# body_words2 = np.array([x for x in body_words if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
+# body_words2 = np.array([x for x in body_words2 if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
 #
-# plt.figure(2)
+# plt.figure(1)
 # plt.scatter(np.arange(len(body_words2)), body_words2)
 # plt.title("Sliced Body Word-frequency")
 # plt.xlabel("Individual Words")
@@ -96,10 +100,31 @@ ordered_body_words_list = list( sliced_body_dict.keys() )
 
 final_vector_dataset = preprocess.create_feature_vector( list(topics_set), ordered_body_words_list, full_tuple_list )
 
+
 words = final_vector_dataset["words_vectors"]
+fives = final_vector_dataset["important_words_vectors"]
 keywords = final_vector_dataset["topic_keyword_vectors"]
 topics = final_vector_dataset["topics_classes"]
 places = final_vector_dataset["places_classes"]
+
+total_documents = len(words)
+
+with open('Outputs/buzzword_vectors.txt','w', encoding='UTF-8') as output:
+    output.writelines(str(words[i])+'\n' for i in range(total_documents))
+
+with open('Outputs/important_words_vectors.txt','w', encoding='UTF-8') as output:
+    output.writelines(str(fives[i])+'\n' for i in range(total_documents))
+
+with open('Outputs/topic_keyord_vectors.txt','w', encoding='UTF-8') as output:
+    output.writelines(str(keywords[i])+'\n' for i in range(total_documents))
+
+with open('Outputs/topics_classes.txt','w', encoding='UTF-8') as output:
+    output.writelines(str(topics[i])+'\n' for i in range(total_documents))
+
+with open('Outputs/places_classes.txt','w', encoding='UTF-8') as output:
+    output.writelines(str(places[i])+'\n' for i in range(total_documents))
+
+
 
 
 # # print (nltk.jaccard_distance(body1, body2))

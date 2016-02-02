@@ -1,3 +1,8 @@
+# Author: Zach Peugh #
+#    CSE 5243 Lab1   #
+#       2/1/2016     #
+
+################ Utility Module ##############
 import re
 import nltk
 import numpy as np
@@ -7,15 +12,6 @@ PLACES_POSITION = 1
 TITLE_POSITION = 2
 BODY_POSITION = 3
 
-
-#
-# #Load in all of the reuters from the archive
-# for i in NUM_SUFFIXES:
-#     url = "https://web.cse.ohio-state.edu/~srini/674/public/reuters/reut2-0{0}.sgm".format(i)
-#     print url
-#     urllib.urlretrieve (url, "reuters/{0}.sgm".format(i) )
-#
-
 # returns all content of string_to_parse between start and stop.
 # returns "none" if nothing is found
 def get_content_between_strings(start, stop, string_to_parse):
@@ -24,7 +20,6 @@ def get_content_between_strings(start, stop, string_to_parse):
         return content.group(1)
     else:
         return "none"
-
 
 def make_reuter_list_from_file( filename ):
     #Setup variables
@@ -71,9 +66,9 @@ def remove_stopwords( wordset ):
 # return a set of keywords
 def tokenize_and_clean( str ):
     # use split if nltk package is not installed, or install punkt nltk package
-    return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
+    # return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
     # return set( remove_stopwords( nltk.word_tokenize( str ) ) ) #remove duplicates
-    # return list( remove_stopwords( str.split() ) )
+    return list( remove_stopwords( str.split() ) )
 
 
 
@@ -119,7 +114,13 @@ def throw_out_below_frequency(dictionary, percent_occurance_lower_cutoff, percen
 
     return sliced_dict
 
-
+# takes ordered lists of topic words, body words, and the full tuple array, and returns
+# the final feature vector dictionary with 5 entries of equal length
+# 'words_vectors' -> the body buzzwords feature vector
+# 'important_words_vectors' -> the five important words from the bodies vectors
+# 'topic_keyword_vectors' -> the topic keyword indices (if any) vectors
+# 'topics_classes' -> the matching topics classes
+# 'placess_classes' -> the matching places classes
 def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tuple_array):
     num_documents = len(tuple_array)
     num_distinct_body_words = len( ordered_body_words_list )
@@ -129,11 +130,14 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
     feature_vector_dict['topic_keyword_vectors'] = []
     feature_vector_dict['topics_classes'] = []
     feature_vector_dict['places_classes'] = []
+    feature_vector_dict['important_words_vectors'] = []
     i = 0
     for tup in tuple_array:
         i +=1
         if i % 1000 == 0:
             print ("{0}%".format(int((i / num_documents) * 100) ) )
+
+        important_words = dict()
         topics = tup[TOPICS_POSITION]
         places = tup[PLACES_POSITION]
         topic_keyword_vector = []
@@ -151,10 +155,17 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
             if word in ordered_topic_words_list:
                 index = ordered_topic_words_list.index(word)
                 topic_keyword_vector.append(index)
+            if word in important_words:
+                important_words[word] += 1
+            else:
+                important_words[word] = 1
+
+        top_five_words = [x for x in sorted(important_words, key=important_words.get)][-5:]
 
         feature_vector_dict['words_vectors'].append(bodies_vector)
         feature_vector_dict['topic_keyword_vectors'].append(topic_keyword_vector)
         feature_vector_dict['topics_classes'].append(topics)
         feature_vector_dict['places_classes'].append(places)
+        feature_vector_dict['important_words_vectors'].append(top_five_words)
 
     return feature_vector_dict
