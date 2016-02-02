@@ -57,17 +57,17 @@ places = final_vector_dataset["places_classes"]
 
 total_documents = len(words)
 
-with open('Outputs/buzzword_vectors.txt','w', encoding='UTF-8') as output:
+with open('Outputs/buzzword_vectors.txt','w') as output:
     output.writelines(str(words[i])+'\n' for i in range(total_documents))
 
-with open('Outputs/important_words_vectors.txt','w', encoding='UTF-8') as output:
+with open('Outputs/important_words_vectors.txt','w') as output:
     output.writelines(str(fives[i])+'\n' for i in range(total_documents))
 
-with open('Outputs/topic_keyord_vectors.txt','w', encoding='UTF-8') as output:
+with open('Outputs/topic_keyord_vectors.txt','w') as output:
     output.writelines(str(keywords[i])+'\n' for i in range(total_documents))
 
-with open('Outputs/topics_classes.txt','w', encoding='UTF-8') as output:
+with open('Outputs/topics_classes.txt','w') as output:
     output.writelines(str(topics[i])+'\n' for i in range(total_documents))
 
-with open('Outputs/places_classes.txt','w', encoding='UTF-8') as output:
+with open('Outputs/places_classes.txt','w') as output:
     output.writelines(str(places[i])+'\n' for i in range(total_documents))

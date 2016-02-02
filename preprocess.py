@@ -101,7 +101,6 @@ def get_entry_array( reuter_array ):
 # (i.e. 0.01 to retrieve all words occurring in 1% or more documents
 def throw_out_below_frequency(dictionary, percent_occurance_lower_cutoff, percent_occurance_upper_cutoff):
     size = len(dictionary)
-    print("THE LENGTH OF THE ORIGINAL DICTIONARY IS %i" % (size))
     lower_cutoff = percent_occurance_lower_cutoff * size
     upper_cutoff = percent_occurance_upper_cutoff * size
     sliced_dict = dict()
@@ -135,7 +134,7 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
     for tup in tuple_array:
         i +=1
         if i % 1000 == 0:
-            print ("{0}%".format(int((i / num_documents) * 100) ) )
+            print ("{0}%".format(((i / num_documents) * 100) ) )
 
         important_words = dict()
         topics = tup[TOPICS_POSITION]
