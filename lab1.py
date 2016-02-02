@@ -2,7 +2,7 @@
 #    CSE 5243 Lab1   #
 #       2/1/2016     #
 
-################ Script ##############
+################ Runnable Script ##############
 import numpy as np
 import preprocess
 
@@ -18,7 +18,6 @@ BODY_UPPER_CUTOFF = .10
 full_tuple_list = []
 body_word_frequency_dict = dict()
 topic_word_frequency_dict = dict()
-# title_word_frequency_dict = dict()
 topics_set = set()
 NUM_SUFFIXES = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
 
@@ -40,66 +39,15 @@ for i in range(0, len(NUM_SUFFIXES)):
                 topic_word_frequency_dict[topic] += 1
             else:
                 topic_word_frequency_dict[topic] = 1
-        # for word in title:
-        #     if word in title_word_frequency_dict:
-        #         title_word_frequency_dict[word] += 1
-        #     else:
-        #         title_word_frequency_dict[word] = 1
         for word in body:
             if word in body_word_frequency_dict:
                 body_word_frequency_dict[word] += 1
             else:
                 body_word_frequency_dict[word] = 1
 
-
-
-
-length = len(body_word_frequency_dict)
-#
-# body_words = np.array(list(body_word_frequency_dict.values()) ) / length
-# body_words = np.array(body_words)
-#
-# plt.figure(1)
-# plt.scatter(np.arange(len(body_words)), body_words)
-# plt.title("Body Word-Frequency")
-# plt.xlabel("Individual Words")
-# plt.ylabel("Normalized per document Frequency")
-#
-# body_words2 = np.array(list(body_word_frequency_dict.values())) / length
-# body_words2 = np.array([x for x in body_words2 if x > BODY_LOWER_CUTOFF and x < BODY_UPPER_CUTOFF])
-#
-# plt.figure(1)
-# plt.scatter(np.arange(len(body_words2)), body_words2)
-# plt.title("Sliced Body Word-frequency")
-# plt.xlabel("Individual Words")
-# plt.ylabel("Normalized per document Frequency")
-#
-# plt.show()
-
-
-#
-# plt.scatter(np.arange(len(topic_word_frequency_dict)), list(topic_word_frequency_dict.values()) )
-# plt.show()
-
-# I will choose a threshold frequency as the inverse of the number of topics available
-# to reduce the dimensionality of the word attributes
-# sliced_body_dict = throw_out_below_frequency( body_word_frequency_dict, 1/len(topics_set) )
-body_copy = body_word_frequency_dict.copy()
 sliced_body_dict = preprocess.throw_out_below_frequency( body_word_frequency_dict, BODY_LOWER_CUTOFF, BODY_UPPER_CUTOFF )
 
-print( "The length of the sliced dictionary is %i" %( len(sliced_body_dict)) )
-
-# sliced_title_dict = throw_out_below_frequency( title_word_frequency_dict, 1/len(topics_set) )
-# sliced_title_dict = preprocess.throw_out_below_frequency( title_word_frequency_dict, TITLE_LOWER_CUTOFF, TITLE_UPPER_CUTOFF )
-#
-# print( "The length of the sliced dictionary is %i" %( len(sliced_title_dict)) )
-
-# ordered_title_words_list = list( sliced_title_dict.keys() )
-ordered_body_words_list = list( sliced_body_dict.keys() )
-
-
-final_vector_dataset = preprocess.create_feature_vector( list(topics_set), ordered_body_words_list, full_tuple_list )
-
+final_vector_dataset = preprocess.create_feature_vector( list(topics_set), list(sliced_body_dict.keys()), full_tuple_list )
 
 words = final_vector_dataset["words_vectors"]
 fives = final_vector_dataset["important_words_vectors"]
@@ -123,8 +71,3 @@ with open('Outputs/topics_classes.txt','w', encoding='UTF-8') as output:
 
 with open('Outputs/places_classes.txt','w', encoding='UTF-8') as output:
     output.writelines(str(places[i])+'\n' for i in range(total_documents))
-
-
-
-
-# # print (nltk.jaccard_distance(body1, body2))
