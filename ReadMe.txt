@@ -1,3 +1,7 @@
+stdlinux lab folder location:
+    /home/3/peugh/cse5243/Datamining/
+
+
 ##################### Running the script #####################
 This is a python program that uses nltk and numpy imports.
 In order to run the script to produce the output vectors, you
