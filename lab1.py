@@ -63,7 +63,7 @@ with open('Outputs/buzzword_vectors.txt','w') as output:
 with open('Outputs/important_words_vectors.txt','w') as output:
     output.writelines(str(fives[i])+'\n' for i in range(total_documents))
 
-with open('Outputs/topic_keyord_vectors.txt','w') as output:
+with open('Outputs/topic_keyword_vectors.txt','w') as output:
     output.writelines(str(keywords[i])+'\n' for i in range(total_documents))
 
 with open('Outputs/topics_classes.txt','w') as output:
