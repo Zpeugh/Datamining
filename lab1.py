@@ -13,7 +13,7 @@ BODY_POSITION = 3
 
 BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
-
+REUTERS_DIRECTORY = '~srini/WWW/674/public/reuters'
 
 full_tuple_list = []
 body_word_frequency_dict = dict()
@@ -22,9 +22,8 @@ topics_set = set()
 NUM_SUFFIXES = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
 
 for i in range(0, len(NUM_SUFFIXES)):
-# for i in range(0, 1):
 
-    reuter_array = preprocess.make_reuter_list_from_file( "reuters/{0}.sgm".format(NUM_SUFFIXES[i]) )
+    reuter_array = preprocess.make_reuter_list_from_file( "{0}/reut2-0{1}.sgm".format(REUTERS_DIRECTORY,NUM_SUFFIXES[i]) )
     split_array = preprocess.get_entry_array( reuter_array )
     print("Step {0}/{1}".format(i+1,41))
     for article in split_array:
