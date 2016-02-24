@@ -13,7 +13,9 @@ BODY_POSITION = 3
 
 BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
-REUTERS_DIRECTORY = '~srini/WWW/674/public/reuters'
+# REUTERS_DIRECTORY = "/home/0/srini/WWW/674/public/reuters"
+REUTERS_DIRECTORY = "reuters/"
+
 
 full_tuple_list = []
 body_word_frequency_dict = dict()

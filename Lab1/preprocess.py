@@ -136,7 +136,7 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
         i +=1
         if i % 1000 == 0:
             j += 1
-            print ("Step {0}/42".format(j) )
+            print ("Step {0}/41".format(j) )
 
         important_words = dict()
         topics = tup[TOPICS_POSITION]
