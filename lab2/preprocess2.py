@@ -48,26 +48,38 @@ def filter_string(str):
     str = str.replace('&lt;','<')
     return str
 
+
+
+def stringIsNumber( word ):
+    try:
+        float(word)
+        return True
+    except ValueError:
+        return False
+
+
+
 # eliminate stopwords from a list and then return the cleaned array
 def remove_stopwords( wordset ):
     stopwords = nltk.corpus.stopwords.words("english")
-    stopwords.append('&')
-    stopwords.append('#')
+    stopwords = stopwords + ['&','#', '.', ',', '\'s', '\'\'', '\"', '\"\"', '\'' ,'reuter', 'reuters']
+
     new_wordset = []
     # stemmer = nltk.stem.porter.PorterStemmer()
     for word in wordset:
         word = word.lower()
         # word = stemmer.stem(word)
         if word not in stopwords:
-            new_wordset.append(word)
+            if not stringIsNumber(word):
+                new_wordset.append(word)
     return new_wordset
 
 # tokenize a string and clean it of stopwords, removing duplicates
 # return a set of keywords
 def tokenize_and_clean( str ):
     # use split if nltk package is not installed, or install punkt nltk package
-    # return list( remove_stopwords( nltk.word_tokenize( str ) ) ) #keep duplicates
-    return set( remove_stopwords( nltk.word_tokenize( str ) ) ) #remove duplicates
+    return list( remove_stopwords( nltk.word_tokenize( str ) ) )
+    # return set( remove_stopwords( nltk.word_tokenize( str ) ) ) #remove duplicates
     # return list( remove_stopwords( str.split() ) )
 
 
@@ -120,16 +132,16 @@ def throw_out_below_frequency(dictionary, percent_occurance_lower_cutoff, percen
 # 'topic_keyword_vectors' -> the topic keyword indices (if any) vectors
 # 'topics_classes' -> the matching topics classes
 # 'placess_classes' -> the matching places classes
-def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tuple_array):
+def create_feature_vector(ordered_topic_words_list, sliced_ordered_body_words_list, tuple_array):
     num_documents = len(tuple_array)
-    num_distinct_body_words = len( ordered_body_words_list )
+    num_distinct_body_words = len( sliced_ordered_body_words_list )
     num_distinct_title_words = len( ordered_topic_words_list )
     feature_vector_dict = dict()
     feature_vector_dict['words_vectors'] = []
     feature_vector_dict['topic_keyword_vectors'] = []
     feature_vector_dict['topics_classes'] = []
     feature_vector_dict['places_classes'] = []
-    feature_vector_dict['important_words_vectors'] = []
+    feature_vector_dict['words_and_topics_vectors'] = []
     i = 0
     j = 21
     for tup in tuple_array:
@@ -139,6 +151,7 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
             print ("Step {0}/41".format(j) )
 
         important_words = dict()
+        all_words = dict()
         topics = tup[TOPICS_POSITION]
         places = tup[PLACES_POSITION]
         topic_keyword_vector = np.zeros(num_distinct_title_words)
@@ -147,26 +160,18 @@ def create_feature_vector(ordered_topic_words_list, ordered_body_words_list, tup
         for word in tup[TITLE_POSITION]:
             if word in ordered_topic_words_list:
                 index = ordered_topic_words_list.index(word)
-                topic_keyword_vector[index] = 1
+                topic_keyword_vector[index] += 1
 
         for word in tup[BODY_POSITION]:
-            if word in ordered_body_words_list:
-                index = ordered_body_words_list.index(word)
-                bodies_vector[index] = 1
-            # if word in ordered_topic_words_list:
-            #     index = ordered_topic_words_list.index(word)
-            #     topic_keyword_vector[index] = 1
-            if word in important_words:
-                important_words[word] += 1
-            else:
-                important_words[word] = 1
+            if word in sliced_ordered_body_words_list:
+                index = sliced_ordered_body_words_list.index(word)
+                bodies_vector[index] += 1
 
-        top_five_words = [x for x in sorted(important_words, key=important_words.get)][-5:]
 
         feature_vector_dict['words_vectors'].append(bodies_vector)
         feature_vector_dict['topic_keyword_vectors'].append(topic_keyword_vector)
         feature_vector_dict['topics_classes'].append(topics)
         feature_vector_dict['places_classes'].append(places)
-        feature_vector_dict['important_words_vectors'].append(top_five_words)
+        feature_vector_dict['words_and_topics_vectors'].append(np.concatenate((bodies_vector,topic_keyword_vector)))
 
     return feature_vector_dict
