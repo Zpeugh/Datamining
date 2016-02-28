@@ -10,6 +10,7 @@ import itertools
 import math
 import scipy
 from k_means import Kmeans
+import time
 
 
 TOPICS_POSITION = 0
@@ -30,7 +31,7 @@ topics_set = set()
 NUM_SUFFIXES = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
 
 for i in range(0, len(NUM_SUFFIXES)):
-# for i in range(6):
+# for i in range(5):
 
     reuter_array = preprocess2.make_reuter_list_from_file( "{0}/reut2-0{1}.sgm".format(REUTERS_DIRECTORY,NUM_SUFFIXES[i]) )
     split_array = preprocess2.get_entry_array( reuter_array )
@@ -67,7 +68,7 @@ places = final_vector_dataset["places_classes"]
 ## Remove all samples with no TOPIC label associated with them
 indices_to_delete = []
 for index, topic in enumerate(topics):
-    if (topic == ['']):
+    if (topic == [''] or topic == ['none']):
         indices_to_delete.append(index)
 
 for count, index in enumerate(indices_to_delete):
@@ -157,37 +158,35 @@ num_means = 118
 
 
 #######################JUST BODY WORDS###################
-distance_measures = ['euclidean', 'cosine']
+distance_measures = ['euclidean']
 
-for i, metric_name in enumerate(distance_measures):
-
-    km_clusterer = Kmeans(np.array(words), k=num_means, metric=metric_name, maxiter=20)
-    km_predicted = km_clusterer.clusters
-
-    kclusters = []
-    labels = np.full(118, dtype=object, fill_value='none')
-    for cluster in np.unique(km_predicted):
-        flattened_cluster, majority_label = flattenClusters( [topics[index] for index, x in enumerate(km_predicted) if x == cluster] )
-        kclusters.append(flattened_cluster)
-        labels[cluster] = majority_label
-
-    all_clusters.append(kclusters)
-    num_clusters = len(words)
-    weightedEntropies.append( [measureEntropy(x) * (len(x) / num_clusters) for x in kclusters] )
-    entropies.append( [measureEntropy(x) for x in kclusters] )
-    sumEnts.append( np.average( [x for x in entropies[i] if(x > 0 or len(kclusters[i]) > 2) ]) )
-
-    predicted_labels = [labels[x] for x in km_predicted]
-    correctly_classified = sum([1 for i,x in enumerate(predicted_labels) if x in topics[i] ] ) / len(labels)
-    # sumWeightedEnts.append(  )
-
-    print( "%s distance:    entropy: %f    correctly_classified: %f" % (metric_name, sumEnts[i], correctly_classified ) )
-
-
-
+#
+# for i, metric_name in enumerate(distance_measures):
+#
+#     km_clusterer = Kmeans(np.array(words), k=num_means, metric=metric_name, maxiter=20)
+#     km_predicted = km_clusterer.clusters
+#
+#     kclusters = []
+#     labels = np.full(118, dtype=object, fill_value='none')
+#     for cluster in np.unique(km_predicted):
+#         flattened_cluster, majority_label = flattenClusters( [topics[index] for index, x in enumerate(km_predicted) if x == cluster] )
+#         kclusters.append(flattened_cluster)
+#         labels[cluster] = majority_label
+#
+#     all_clusters.append(kclusters)
+#     num_clusters = len(words)
+#     weightedEntropies.append( [measureEntropy(x) * (len(x) / num_clusters) for x in kclusters] )
+#     entropies.append( [measureEntropy(x) for x in kclusters] )
+#     sumEnts.append( np.average( [x for x in entropies[i] if(x > 0 or len(kclusters[i]) > 2) ]) )
+#
+#     predicted_labels = [labels[x] for x in km_predicted]
+#     correctly_classified = sum([1 for i,x in enumerate(predicted_labels) if x in topics[i] ] ) / len(labels)
+#     # sumWeightedEnts.append(  )
+#
+#     print( "%s distance:    entropy: %f    correctly_classified: %f" % (metric_name, sumEnts[i], correctly_classified ) )
+#
 
 ###############TOPICS AND BODY##################
-# distance_measures = ['euclidean', 'cosine']
 #
 # for i, metric_name in enumerate(distance_measures):
 #
@@ -195,11 +194,11 @@ for i, metric_name in enumerate(distance_measures):
 #     km_predicted = km_clusterer.clusters
 #
 #     kclusters = []
-#     labels = []
-#     for cluster in range(num_means):
+#     labels = np.full(118, dtype=object, fill_value='none')
+#     for cluster in np.unique(km_predicted):
 #         flattened_cluster, majority_label = flattenClusters( [topics[index] for index, x in enumerate(km_predicted) if x == cluster] )
 #         kclusters.append(flattened_cluster)
-#         labels.append(majority_label)
+#         labels[cluster] = majority_label
 #
 #     all_clusters.append(kclusters)
 #     num_clusters = len(both)
@@ -215,6 +214,45 @@ for i, metric_name in enumerate(distance_measures):
 #
 #
 #
+
+
+
+number_of_leafs = 118
+
+############# Hierarchical ################
+linkage = ['ward', 'complete']
+
+for i, linkage_name in enumerate(linkage):
+
+    h_clusterer = AgglomerativeClustering(n_clusters= number_of_leafs, linkage=linkage_name)
+
+    t0 = time.clock()
+    h_predicted = h_clusterer.fit_predict(np.array(both))
+    print("Time to fit: {0} seconds.".format(time.clock() - t0) )
+
+    clusters = np.unique(h_predicted)
+
+    kclusters = []
+    labels = np.full(number_of_leafs, dtype=object, fill_value='none')
+    for cluster in clusters:
+        topics_cluster = [topics[index] for index, x in enumerate(h_predicted) if (cluster != -1 and x == cluster)]
+        if topics_cluster:
+            flattened_cluster, majority_label = flattenClusters( topics_cluster )
+            kclusters.append(flattened_cluster)
+            labels[cluster] = majority_label
+
+    all_clusters.append(kclusters)
+    num_clusters = len(both)
+    weightedEntropies.append( [measureEntropy(x) * (len(x) / num_clusters) for x in kclusters] )
+    entropies.append( [measureEntropy(x) for x in kclusters] )
+    sumEnts.append( np.average( [x for x in entropies[i] if(x > 0 or len(kclusters[i]) > 2) ]) )
+
+    predicted_labels = [labels[x] for x in h_predicted]
+    correctly_classified = sum([1 for i,x in enumerate(predicted_labels) if x in topics[i] ] ) / len(labels)
+    # sumWeightedEnts.append(  )
+
+    print( "%s distance:    entropy: %f    correctly_classified: %f" % (linkage_name, sumEnts[i], correctly_classified ) )
+
 
 
 
