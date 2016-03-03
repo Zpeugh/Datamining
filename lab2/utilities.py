@@ -1,8 +1,8 @@
 # Author: Zach Peugh #
 #    CSE 5243 Lab2   #
-#       2/22/2016     #
+#       2/22/2016    #
+# Utility script to run clustering on preprocessed data.
 
-################ Runnable Script ##############
 import numpy as np
 import preprocess2
 from sklearn.cluster import *
@@ -11,7 +11,6 @@ import math
 import scipy
 from k_means import Kmeans
 import time
-
 
 TOPICS_POSITION = 0
 PLACES_POSITION = 1
@@ -22,14 +21,13 @@ BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
 
 
-def preprocessData(reuters_directory="../reuters", num_files=22):
+def preprocessData(reuters_directory="/home/0/srini/WWW/674/public/reuters", num_files=22):
 
     full_tuple_list = []
     body_word_frequency_dict = dict()
     topic_word_frequency_dict = dict()
     topics_set = set()
     NUM_SUFFIXES = ["00","01","02","03","04","05","06","07","08","09","10","12","13","14","15","16","17","18","19","20","21"]
-
 
     for i in range(num_files - 1):
 
@@ -56,25 +54,6 @@ def preprocessData(reuters_directory="../reuters", num_files=22):
 
     sliced_body_dict = preprocess2.throw_out_below_frequency( body_word_frequency_dict, BODY_LOWER_CUTOFF, BODY_UPPER_CUTOFF )
     final_vector_dataset = preprocess2.create_feature_vector( list(topics_set), list(sliced_body_dict.keys()), full_tuple_list )
-
-    # words = final_vector_dataset["words_vectors"]
-    # both = final_vector_dataset["words_and_topics_vectors"]
-    # keywords = final_vector_dataset["topic_keyword_vectors"]
-    # topics = final_vector_dataset["topics_classes"]
-    # places = final_vector_dataset["places_classes"]
-    #
-    # ## Remove all samples with no TOPIC label associated with them
-    # indices_to_delete = []
-    # for index, topic in enumerate(topics):
-    #     if (topic == [''] or topic == ['none']):
-    #         indices_to_delete.append(index)
-    #
-    # for count, index in enumerate(indices_to_delete):
-    #     del topics[index - count]
-    #     del both[index - count]
-    #     del keywords[index - count]
-    #     del places[index - count]
-    #     del words[index - count]
 
     ## Remove all samples with no TOPIC label associated with them
     indices_to_delete = []
@@ -114,6 +93,8 @@ def flattenClusters(clusters):
 
     return (final_list, majority_label)
 
+
+
 def measureEntropy(clusters):
 
     num_labels = len(clusters)
@@ -137,9 +118,8 @@ def measureEntropy(clusters):
 
     entropy = 0.0
 
-    # Compute standard entropy.
+    # Compute normalized entropy.
     for i in probabilities:
-        # entropy -= (i * math.log(i, 2) ) / math.log(num_labels, 2)
         entropy -= i * math.log(i, num_labels)
 
     return entropy
@@ -154,12 +134,9 @@ def skew(clusters):
 
 
 def writeFeatureVectors(feature_vector_dict):
-
     total_documents = len(feature_vector_dict['topics_classes'])
-
     if not os.path.exists('Outputs'):
         os.makedirs('Outputs')
-
     with open('Outputs/buzzword_vectors.txt','w') as output:
         output.writelines(str(feature_vector_dict['words_vectors'][i])+'\n' for i in range(total_documents))
 
@@ -174,6 +151,8 @@ def writeFeatureVectors(feature_vector_dict):
 
     with open('Outputs/places_classes.txt','w') as output:
         output.writelines(str(feature_vector_dict['places_classes'][i])+'\n' for i in range(total_documents))
+
+
 
 def kmeans_cluster(feature_vector, ground_truth_labels, num_means=118, metric='euclidean'):
 
@@ -204,9 +183,8 @@ def kmeans_cluster(feature_vector, ground_truth_labels, num_means=118, metric='e
 
     return results
 
-number_of_leafs = 118
 
-############# Hierarchical ################
+
 def hierarchical_cluster(feature_vector, ground_truth_labels, number_of_leafs=118, linkage='ward', metric='euclidean'):
 
     # The dictionary of results to return
@@ -244,7 +222,3 @@ def hierarchical_cluster(feature_vector, ground_truth_labels, number_of_leafs=11
     print("Average cluster entropy: %.3f\nSkew: %.3f\nCorrectly classified: %.3f" % (results['entropy'], results['skew'],results['accuracy']) )
 
     return results
-
-
-
-#
