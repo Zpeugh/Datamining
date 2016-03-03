@@ -1,3 +1,7 @@
+######################### DISCLAIMER #####################
+# I did not write this code, I snagged it from Stack Exchange
+# from user "denis".
+
 # kmeans.py using any of the 20-odd metrics in scipy.spatial.distance
 # kmeanssample 2 pass, first sample sqrt(N)
 
