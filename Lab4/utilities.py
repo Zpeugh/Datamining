@@ -7,6 +7,7 @@ import time
 import random
 import matplotlib.pyplot as plt
 import itertools
+import numpy as np
 
 PRIME_MOD = 4294967311
 MAX_HASH_BIN = 2**32-1
@@ -18,11 +19,7 @@ def jaccard_sim( s1, s2 ):
         return 0
 
 def estimated_sim( s1, s2 ):
-    count = 0
-    for sig in s1:
-        count = count + (sig in s2)
-
-    return count / float(len(s1))
+    return len(set(s1).intersection(s2)) / float( len(s1) )
 
 
 #Returns n unique random coefficients between 0-MAX_HASH_BIN
@@ -51,11 +48,11 @@ def minHash(document_list, k=16):
     signatures_list = []
 
     for doc in document_list:
-        signatures = []
+        signatures = set()
         for i in range(k):
             a = coeffs[i]
             b = coeffs[i+1]
-            signatures.append(min_shingle_hash(doc, a, b))
+            signatures.add(min_shingle_hash(doc, a, b))
         signatures_list.append(signatures)
 
     return signatures_list
@@ -80,8 +77,8 @@ def get_estimated_similarities(document_sets):
     binary_tuples = list(itertools.combinations([i for i in range(num_docs)], 2))
 
     for i, tup in enumerate(binary_tuples):
-            ds1 = document_sets[tup[0]]
-            ds2 = document_sets[tup[1]]
+            ds1 = set(document_sets[tup[0]])
+            ds2 = set(document_sets[tup[1]])
             est_sims.append( estimated_sim(ds1, ds2) )
 
     return est_sims
