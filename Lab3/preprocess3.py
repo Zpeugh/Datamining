@@ -48,14 +48,12 @@ def filter_string(str):
     return str
 
 
-
 def stringIsNumber( word ):
     try:
         float(word)
         return True
     except ValueError:
         return False
-
 
 
 # eliminate stopwords from a list and then return the cleaned array
