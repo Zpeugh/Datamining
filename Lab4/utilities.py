@@ -5,9 +5,7 @@
 import preprocess4
 import time
 import random
-import matplotlib.pyplot as plt
 import itertools
-import numpy as np
 
 PRIME_MOD = 4294967311
 MAX_HASH_BIN = 2**32-1
@@ -62,8 +60,10 @@ def get_jaccard_similarities(document_sets):
     num_docs = len(document_sets)
     jacc_sims = []
     binary_tuples = list(itertools.combinations([i for i in range(num_docs)], 2))
-
+    num_tuples = len(binary_tuples)
     for i, tup in enumerate(binary_tuples):
+            if i % 1000000 == 0:
+                print("%d/%d" % (i, num_tuples))
             ds1 = document_sets[tup[0]]
             ds2 = document_sets[tup[1]]
             jacc_sims.append( jaccard_sim(ds1, ds2) )
@@ -80,16 +80,8 @@ def get_estimated_similarities(document_sets):
             ds1 = set(document_sets[tup[0]])
             ds2 = set(document_sets[tup[1]])
             est_sims.append( estimated_sim(ds1, ds2) )
-
     return est_sims
 
 
 def mean_squared_error(estimated, actual):
     return sum( [(x - actual[i])**2 for i, x in enumerate(estimated)] ) / float(len(estimated))
-
-
-
-
-
-
-    #

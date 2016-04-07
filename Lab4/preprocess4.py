@@ -48,7 +48,7 @@ def filter_string(str):
     str = str.replace('\n',' ')
     str = str.replace('&lt;','<')
     #replace all numbers with the word NUMBER
-    str = re.sub(r"([\d]+([\.,]*[\d]+)+)+", "NUMBER", str)
+    #str = re.sub(r"([\d]+([\.,]*[\d]+)+)+", "NUMBER", str)
     return str
 
 
