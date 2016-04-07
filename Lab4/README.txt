@@ -16,7 +16,7 @@ Assuming all dependencies are met, run the file by typing the command
 ########################################## Files ##########################################
 
 minHash.py
-    This script is set up to run MinHash on 4 documents for K values 16, 32, 64, 128, 256.
+    This script is set up to run MinHash on 5 documents for K values 16, 32, 64, 128, 256.
     The results will print to the screen.  They can be plotted if the matplotlib code is
     uncommented out, given that the matplotlib library is installed.
 
