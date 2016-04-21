@@ -5,16 +5,12 @@
 
 import numpy as np
 import preprocess5
-import sklearn
 import itertools
 import math
-import scipy
 import time
 import matplotlib.pyplot as plt
-from sklearn.neighbors import NearestNeighbors as NN
-from sklearn.naive_bayes import GaussianNB
-from sklearn.tree import DecisionTreeClassifier as DTC
-from sklearn.metrics import *
+import subprocess
+from operator import itemgetter
 
 TOPICS_POSITION = 0
 BODY_POSITION = 1
@@ -22,6 +18,9 @@ BODY_POSITION = 1
 BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
 
+IN_FILE = 'transactions.txt'
+OUT_FILE = 'C:\\Users\\Zach\\documents\\github\\datamining\\lab5\\rules.txt'
+CONSTRAINT_FILE = 'appearances.txt'
 
 def preprocess_data(reuters_directory="/home/0/srini/WWW/674/public/reuters", num_files=21):
 
@@ -40,8 +39,7 @@ def preprocess_data(reuters_directory="/home/0/srini/WWW/674/public/reuters", nu
             topics = article[TOPICS_POSITION]
             full_tuple_list.append( (topics, body) )
             for topic in topics:
-                if topic:
-                    topics_set.add(topic)
+                topics_set.add(topic)
             for word in body:
                 if word in body_word_frequency_dict:
                     body_word_frequency_dict[word] += 1
@@ -63,39 +61,37 @@ def preprocess_data(reuters_directory="/home/0/srini/WWW/674/public/reuters", nu
         del topics[index - count]
         del keywords[index - count]
 
-    return ( topics, keywords )
+    return ( topics, keywords, topics_set )
 
 
-def make_transaction_string(words, topics):
-    if len(topics) > 1:
-        return " ".join(words) + " " + "[" + ",".join(topics) + "]"
-    elif len(topics) == 0:
-        return " ".join(words) + " " + topics[0]
+def make_transaction_string(keyword, words):
+    return " ".join(words) + " " + keyword
+
 
 def create_transactions_array(class_vector, keyword_vector):
 
     transaction_array = []
 
     for i, classes in enumerate(class_vector):
-        transaction_array.append(make_transaction_string(keyword_vector[i], classes))
+        if len(classes) == 1:
+            transaction_array.append(make_transaction_string(classes[0], keyword_vector[i]))
+        elif len(class_vector) > 1:
+            for cl in classes:
+                transaction_array.append(make_transaction_string(cl, keyword_vector[i]))
 
     return transaction_array
 
+
 def write_transactions(t_array, filename):
     with open(filename,'w') as output:
-        output.writelines( t+'\n' for t in t_array if t)
+        output.writelines( t+'\n' for t in t_array)
 
 
-def write_appearances(class_vector, filename):
+def write_appearances(topics, filename):
     lines = ['antecedent\n']
-    topics_set = set()
-
-    for topics in class_vector:
-        topics_set.add("[" + ",".join(topics) + "]")
-
-    lines += [topic + ' consequent\n' for topic in topics_set]
+    lines += [topic + ' consequent\n' for topic in topics if topic]
     with open(filename,'w') as output:
-        output.writelines( lines )
+        output.writelines( line for line in lines )
 
 
 def split_vectors(feature_vector, training_split):
@@ -104,6 +100,71 @@ def split_vectors(feature_vector, training_split):
         return (feature_vector[0:split], feature_vector[split:-1])
     else:
         return (feature_vector[0:split,:], feature_vector[split:-1,:])
+
+# Takes a line from the rules output file and returns
+# [class, {word1, word2, word2, ... wordn}, support, confidence]
+#
+def split_line(line):
+    rule = []
+    line = line.split('<-', 1)
+    rule.append(line[0].strip())                        #class
+    line = line[1].split('(', 1)
+    rule.append( set( (line[0].strip()).split(" ")) )   #words set
+    nums = line[1].split(', ')
+    rule.append( float(nums[0]) )                       #support
+    rule.append( float(nums[1][:-2]) )                  #confidence
+    return rule
+
+#  Returns the array of all association rules.  Each entry in the array looks like
+#  [class, [word1, word2, word2], support, confidence]
+def read_rules_from_file():
+    rules = []
+    with open( OUT_FILE ) as rule_file:
+        for line in rule_file:
+            rules.append( split_line(line) )
+    return rules
+
+# Takes an array of rules and orders them based on confidence, then support
+def order_rules(rules_array):
+    return sorted(rules_array, key=itemgetter(3), reverse=True)
+
+# Given the feature vectors, create all of the association rules and return the
+# array of them for use in classification.
+def train_AR_classifier(topics, words, topics_set, support, confidence):
+
+    t_array = create_transactions_array(topics, words)
+    write_transactions(t_array, IN_FILE)
+    write_appearances(topics_set, CONSTRAINT_FILE)
+    fo = open(OUT_FILE, 'w')
+    params = ['apriori', '-tr', '-c'+str(confidence), '-s'+str(support), '-R'+CONSTRAINT_FILE, IN_FILE, OUT_FILE]
+    subprocess.call(params)
+    fo.close()
+
+    return order_rules(read_rules_from_file())
+
+# Takes a testing set of words and returns the association rule classifiers most confident guess
+# for each data point
+def predict_classes(words_sets, rules):
+
+    default_rule = rules[0][0]
+    predicted_classes = []
+    for i, word_set in enumerate(words_sets):
+        predicted_classes.append(default_rule)
+        for rule in rules:
+            if rule.issubset(words_set):
+                predicted_classes[i] = rule[0]
+    return predicted_classes
+
+def run_ar_classifier(topics, words, topics_set, support, confidence, t_split):
+
+    training_words, testing_words = split_vectors(words, t_split)
+    training_topics, testing_topics = split_vectors(topics, t_split)
+
+    rules = train_AR_classifier(training_topics, training_words, topics_set, support, confidence)
+
+    predicted_topics = predicted_classes(testing_words, rules)
+
+    print predicted_topics
 
 
 #
