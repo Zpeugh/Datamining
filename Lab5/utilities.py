@@ -95,11 +95,8 @@ def write_appearances(topics, filename):
 
 
 def split_vectors(feature_vector, training_split):
-    split = math.floor( training_split * len(feature_vector) )
-    if feature_vector.ndim == 1:
-        return (feature_vector[0:split], feature_vector[split:-1])
-    else:
-        return (feature_vector[0:split,:], feature_vector[split:-1,:])
+    split = int( math.floor( training_split * len(feature_vector) ) )
+    return (feature_vector[0:split], feature_vector[split:-1])
 
 # Takes a line from the rules output file and returns
 # [class, {word1, word2, word2, ... wordn}, support, confidence]
@@ -126,7 +123,7 @@ def read_rules_from_file():
 
 # Takes an array of rules and orders them based on confidence, then support
 def order_rules(rules_array):
-    return sorted(rules_array, key=itemgetter(3), reverse=True)
+    return sorted(rules_array, key=itemgetter(3, 2), reverse=True)
 
 # Given the feature vectors, create all of the association rules and return the
 # array of them for use in classification.
@@ -142,35 +139,61 @@ def train_AR_classifier(topics, words, topics_set, support, confidence):
 
     return order_rules(read_rules_from_file())
 
+def jaccard_sim( s1, s2 ):
+    if (len(s1) > 0):
+        return len(s1.intersection(s2)) / float( len(s1.union(s2)) )
+    else:
+        return 0
+
+#takes lists of predicted and actual topics of the same length and
+#indices.  Then returns the average jaccard similarity of each set
+def accuracy(pred, actual):
+    accuracies = 0
+    for i, p in enumerate(pred):
+        if not p.isdisjoint(actual[i]):
+            accuracies += jaccard_sim(p, actual[i])
+    return accuracies / float( len(actual) )
+
+
 # Takes a testing set of words and returns the association rule classifiers most confident guess
 # for each data point
-def predict_classes(words_sets, rules):
+def predict_classes(words_sets, rules, k):
 
     default_rule = rules[0][0]
     predicted_classes = []
     for i, word_set in enumerate(words_sets):
-        predicted_classes.append(default_rule)
+        predicted_classes.append( set() )
+        current_k = 0
         for rule in rules:
-            if rule.issubset(words_set):
-                predicted_classes[i] = rule[0]
+            if rule[1].issubset(word_set) and current_k < k:
+                predicted_classes[i].add( rule[0] )
+                current_k +=1
+        if current_k == 0:
+            predicted_classes[i].add( default_rule )
+
     return predicted_classes
 
-def run_ar_classifier(topics, words, topics_set, support, confidence, t_split):
+def run_ar_classifier(topics, words, topics_set, support, confidence, t_split, k):
+
+    results = dict()
 
     training_words, testing_words = split_vectors(words, t_split)
     training_topics, testing_topics = split_vectors(topics, t_split)
 
+    t0 = time.time()
     rules = train_AR_classifier(training_topics, training_words, topics_set, support, confidence)
+    results["offline_time"] = (time.time() - t0) / float(len(training_topics))
 
-    predicted_topics = predicted_classes(testing_words, rules)
+    t0 = time.time()
+    predicted_topics = predict_classes(testing_words, rules, k)
+    results["online_time"] = (time.time() - t0) / float(len(testing_topics))
 
-    print predicted_topics
+    results["accuracy"] = accuracy(predicted_topics, testing_topics)
 
+    print("\n\n#########  %i/%i Split AR Classifer Results  #########" % (100*t_split, round(100*(1-t_split))))
+    print("Offline training time: %.7f seconds" % (results["offline_time"]))
+    print("Online training time: %.7f seconds" % (results["online_time"]))
+    print("Prediction accuracy: %.2f%%" % (100 * results["accuracy"]))
 
-#
-# print("\n\n#########  %i/%i Split Decision Tree Classifer Results  #########" % (100*training_split, round(100*(1-training_split))))
-# print("Offline training time: %.7f seconds" % (results["offline_time"]))
-# print("Online training time: %.7f seconds" % (results["online_time"]))
-# print("Prediction accuracy: %.2f%%" % (100 * results["accuracy"]))
-# print("Prediction precision: %.2f%%" % (100 * results["precision"]))
+    return results
 #
