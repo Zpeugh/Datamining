@@ -1,11 +1,11 @@
 import utilities
 
 REUTERS_DIRECTORY = "../reuters"
-NUM_FILES = 21
+NUM_FILES = 5
 
-SUPPORT = '3'
-CONFIDENCE = '40'
+SUPPORT = '2'
+CONFIDENCE = '60'
 
 topics, words, topics_set = utilities.preprocess_data(reuters_directory=REUTERS_DIRECTORY, num_files=NUM_FILES)
 
-results = utilities.run_ar_classifier(topics, words, topics_set, SUPPORT, CONFIDENCE, .8, 5)
+results = utilities.run_ar_classifier(topics, words, topics_set, SUPPORT, CONFIDENCE, .666, 3)

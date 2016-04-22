@@ -8,7 +8,6 @@ import preprocess5
 import itertools
 import math
 import time
-import matplotlib.pyplot as plt
 import subprocess
 from operator import itemgetter
 
@@ -19,7 +18,7 @@ BODY_LOWER_CUTOFF = .005
 BODY_UPPER_CUTOFF = .10
 
 IN_FILE = 'transactions.txt'
-OUT_FILE = 'C:\\Users\\Zach\\documents\\github\\datamining\\lab5\\rules.txt'
+OUT_FILE = 'rules.txt'
 CONSTRAINT_FILE = 'appearances.txt'
 
 def preprocess_data(reuters_directory="/home/0/srini/WWW/674/public/reuters", num_files=21):
@@ -151,7 +150,8 @@ def accuracy(pred, actual):
     accuracies = 0
     for i, p in enumerate(pred):
         if not p.isdisjoint(actual[i]):
-            accuracies += jaccard_sim(p, actual[i])
+            # accuracies += jaccard_sim(p, actual[i])
+            accuracies += 1
     return accuracies / float( len(actual) )
 
 
