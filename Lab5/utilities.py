@@ -32,7 +32,7 @@ def preprocess_data(reuters_directory="/home/0/srini/WWW/674/public/reuters", nu
 
         reuter_array = preprocess5.make_reuter_list_from_file( "{0}/reut2-0{1}.sgm".format(reuters_directory,NUM_SUFFIXES[i]) )
         split_array = preprocess5.get_entry_array( reuter_array )
-        print("Step {0}/{1}".format(i+1,41))
+        print("Reading file {0}".format(i+1))
         for article in split_array:
             body = preprocess5.tokenize_and_clean(article[BODY_POSITION])
             topics = article[TOPICS_POSITION]

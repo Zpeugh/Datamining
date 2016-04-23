@@ -120,12 +120,12 @@ def create_feature_vector(ordered_topic_words_list, sliced_ordered_body_words_li
     feature_vector_dict['words_vectors'] = []
     feature_vector_dict['topics_classes'] = []
     i = 0
-    j = 21
+    j = 0
     for tup in tuple_array:
         i +=1
         if i % 1000 == 0:
             j += 1
-            print ("Step {0}/41".format(j) )
+            print ("Processing file {0}".format(j) )
 
         topics = tup[TOPICS_POSITION]
         bodies_vector = []
